@@ -17,8 +17,14 @@ logLabeled("I'm ready!  ⸜(๑'ᵕ'๑)⸝⋆*", "log", "", "color: #66ccff");
 
 <style lang="less" scoped>
 #app {
+  margin-top: 0;
   width: 100%;
   min-width: 1170px;
   min-height: 100vh;
+}
+body {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 </style>

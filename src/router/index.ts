@@ -4,7 +4,7 @@ import NProgress from "nprogress";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/home/index",
+    redirect: "/login",
   },
   {
     path: "/404",
@@ -35,6 +35,11 @@ const routes: RouteRecordRaw[] = [
         },
       },
     ],
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("~/views/login/index.vue"),
   },
   // {
   //   path: "/:pathMatch(.*)*",
