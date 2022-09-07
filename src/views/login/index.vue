@@ -168,6 +168,7 @@ export default defineComponent({
 .my-login-form {
   margin: 30vh auto 0 auto;
   width: 35vw;
+  min-width: 400px;
   padding: 50px 70px 40px 50px;
   /* border: 2px solid rgb(24, 144, 255); */
   border-radius: 4px;
