@@ -62,7 +62,6 @@ import { defineComponent, reactive, computed, ref } from "vue";
 import { UserOutlined, LockOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { useRouter } from "vue-router";
-import Axios from "../../utils/axios";
 
 interface FormState {
   username: string;
@@ -99,34 +98,25 @@ export default defineComponent({
           localStorage.setItem("username", formState.username);
           localStorage.setItem("password", formState.password);
         } else {
-          localStorage.setItem("login", "true");
+          localStorage.removeItem("username");
+          localStorage.removeItem("password");
         }
       } catch (error) {
         console.log(error);
       }
     };
     const loginSubmit = async () => {
-      router.replace("/home/index");
-      // loading.value = true;
-      // try {
-      //   const fd = new FormData();
-      //   fd.append("username", formState.username);
-      //   fd.append("password", formState.password);
-      //   const res = await Axios.post("/backend/login", fd);
-      //   if (res.status === 200 && res.data.success) {
-      //     message.success("登录成功！");
-      //     setSession(formState.remember);
-      //     router.replace("/home/index");
-      //     loading.value = false;
-      //   } else {
-      //     message.error("登录失败，请检查账号密码是否正确！");
-      //     loading.value = false;
-      //   }
-      // } catch (error) {
-      //   console.log("login error", error);
-      // } finally {
-      //   loading.value = false;
-      // }
+      try {
+        if (formState.username === "admin" && formState.password === "admin") {
+          message.success("登录成功！");
+          setSession(formState.remember);
+          router.replace("/home/index");
+        } else {
+          message.error("登录失败，请检查账号密码是否正确！");
+        }
+      } catch (error) {
+        console.log("login error", error);
+      }
     };
     return {
       formState,

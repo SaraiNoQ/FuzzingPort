@@ -1,10 +1,15 @@
 <template>
   <div>
-    <a-table :columns="columns" :data-source="data">
+    <a-table
+      :columns="columns"
+      :data-source="tableData"
+      :pagination="pageSetting"
+      @change="handleTableChange"
+    >
       <template #tags="{ text: tags }">
         <span>
-          <a-tag v-for="tag in tags" :key="tag" :color="tag === '未验证' ? 'volcano' : 'green'">
-            {{ tag.toUpperCase() }}
+          <a-tag :color="tags === '1' ? 'green' : 'volcano'">
+            {{ tags === "1" ? "已验证" : "未验证" }}
           </a-tag>
         </span>
       </template>
@@ -12,7 +17,15 @@
         <span>
           <a @click="toDetail(record)">详情</a>
           <a-divider type="vertical" />
-          <a>删除</a>
+          <a-popconfirm
+            title="是否要删除该项内容？"
+            ok-text="确认"
+            cancel-text="取消"
+            @confirm="removeItem(record)"
+            @cancel="() => {}"
+          >
+            <a>删除</a>
+          </a-popconfirm>
         </span>
       </template>
     </a-table>
@@ -20,11 +33,16 @@
 </template>
 
 <script setup lang="ts">
-// import { onBeforeMount, reactive, ref } from "vue";
-
+import { reactive } from "vue";
+defineProps({
+  tableData: {
+    type: Array<any>,
+    default: [],
+  },
+});
 const columns = [
   {
-    title: "序号",
+    title: "指纹ID",
     dataIndex: "key",
   },
   {
@@ -47,34 +65,35 @@ const columns = [
   },
 ];
 
-const data = [
-  {
-    key: "1",
-    finger: "John Brown",
-    age: 32,
-    address: "New York No. 1 Lake Park",
-    tags: ["已验证"],
-  },
-  {
-    key: "2",
-    finger: "Jim Green",
-    age: 42,
-    address: "London No. 1 Lake Park",
-    tags: ["未验证"],
-  },
-  {
-    key: "3",
-    finger: "Joe Black",
-    age: 32,
-    address: "Sidney No. 1 Lake Park",
-    tags: ["已验证"],
-  },
-];
-
-const emit = defineEmits(["on-detail"]);
+const emit = defineEmits(["on-detail", "on-remove", "on-page"]);
 const toDetail = (val: any) => {
   console.log("table click", val);
   emit("on-detail", val);
+};
+
+const removeItem = (val: any) => {
+  emit("on-remove", val);
+};
+
+// 分页
+interface PageSetting {
+  current: number;
+  pageSize: number;
+  total: number;
+  showSizeChanger: boolean;
+  pageSizeOptions: string[];
+}
+const pageSetting: PageSetting = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0,
+  showSizeChanger: true,
+  pageSizeOptions: ["10", "20", "50", "100"],
+});
+const handleTableChange = (pagination: PageSetting) => {
+  pageSetting.current = pagination.current;
+  pageSetting.pageSize = pagination.pageSize;
+  emit("on-page", pagination);
 };
 </script>
 

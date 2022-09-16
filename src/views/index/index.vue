@@ -27,30 +27,23 @@
           </a-select>
         </div>
         <div class="item">
-          <div class="in-item">
-            <span class="p">模糊查询：</span
-            ><a-input-search
-              v-model:value="searchValue"
-              class="s"
-              placeholder="请输入模糊查询"
-              enter-button="搜索"
-              :loading="searchLoading"
-              @search="onSearch"
-            />
-          </div>
+          <a-button type="primary" @click="serachList"
+            >搜索
+            <template #icon>
+              <SearchOutlined />
+            </template>
+          </a-button>
         </div>
       </div>
 
-      <div class="new">
-        <a-button type="primary"
-          >新建URL
-          <template #icon>
-            <PlusOutlined />
-          </template>
-        </a-button>
+      <div class="table">
+        <Table
+          :table-data="listData"
+          @on-detail="getDetail"
+          @on-remove="getDelete"
+          @on-page="refreshTable"
+        />
       </div>
-
-      <div class="table"><Table @on-detail="getDetail" /></div>
 
       <div>
         <a-modal
@@ -97,18 +90,82 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, UnwrapRef } from "vue";
+import { ref, reactive, UnwrapRef, onBeforeMount } from "vue";
 import zhCN from "ant-design-vue/es/locale/zh_CN";
-import { PlusOutlined } from "@ant-design/icons-vue";
+import { SearchOutlined } from "@ant-design/icons-vue";
 import Table from "./components/table.vue";
+// @ts-ignore
+import axios from "~/utils/axios";
 
 const state = ref<number>();
 const appType = ref<number>();
 
-const searchValue = ref<string>("");
-const searchLoading = ref<boolean>(false);
-const onSearch = () => {
-  searchLoading.value = true;
+// getlist带参数
+const getList = async (
+  pagination: { current: number; pageSize: number } = { current: 1, pageSize: 10 },
+  valid?: string | number,
+  appType?: string | number
+) => {
+  let queryStr = `/api/list?pageNo=${pagination.current}&pageSize=${pagination.pageSize}`;
+  if (valid) {
+    queryStr += `&isValid=${valid}`;
+  }
+  if (appType) {
+    queryStr += `&type=${appType}`;
+  }
+  const res = await axios.get(queryStr);
+  return res;
+};
+
+// 首页list列表
+const listData = ref<Array<TableData>>([]);
+interface TableData {
+  key: string;
+  finger: string;
+  address: string;
+  tags: string[];
+}
+interface Datum {
+  /**
+   * 应用名称
+   */
+  app?: string;
+  /**
+   * 指纹
+   */
+  finger?: string;
+  /**
+   * 指纹id，用于查询详情
+   */
+  id: string;
+  status?: string;
+}
+
+onBeforeMount(async () => {
+  const res = await axios.get("/api/list?pageNo=1&pageSize=10");
+  if (res.status === 200) {
+    const resData: [] = res.data;
+    const arr: Array<TableData> = [];
+    resData.forEach((e: Datum, index: number) => {
+      arr.push({
+        key: e.id,
+        finger: e.finger,
+        address: e.app,
+        tags: e.status,
+      } as unknown as TableData);
+    });
+    listData.value = arr;
+  }
+});
+
+// 过滤搜索
+const serachList = async () => {
+  await getList(val, state.value, appType.value);
+};
+
+// 刷新表格
+const refreshTable = async (val: any) => {
+  await getList(val, state.value, appType.value);
 };
 
 // visible
@@ -119,6 +176,15 @@ const showModal = () => {
 const getDetail = (val: any) => {
   console.log("father", val);
   showModal();
+};
+
+// delete item
+const getDelete = async (val: any) => {
+  const data = {
+    id: val.id,
+  };
+  const res = await axios.post("/api/delete", data);
+  console.log("del", res);
 };
 
 const handleOk = (e: MouseEvent) => {
@@ -195,6 +261,7 @@ const data = [
   display: flex;
   flex-wrap: wrap;
   gap: 30px;
+  margin-bottom: 20px;
 }
 
 .in-item {

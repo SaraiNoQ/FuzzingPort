@@ -23,7 +23,7 @@ instance.interceptors.request.use(
 
 instance.interceptors.response.use(
   (response: AxiosResponse) => {
-    return Promise.resolve(response);
+    return Promise.resolve(response.data);
   },
   (error) => {
     console.log("response error", error);
