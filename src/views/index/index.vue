@@ -80,7 +80,7 @@
               <span>聚类分析响应：</span>
             </a-form-item>
             <a-form-item>
-              <a-table :columns="columns" :data-source="data" :pagination="false"> </a-table>
+              <div class="resp"></div>
             </a-form-item>
           </a-form>
         </a-modal>
@@ -290,5 +290,11 @@ const data = [
 
 .res {
   margin: 10px 0px 10px 10px;
+
+  .resp {
+    overflow-y: auto;
+    height: 120px;
+    background-color: pink;
+  }
 }
 </style>
