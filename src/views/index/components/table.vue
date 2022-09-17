@@ -4,6 +4,7 @@
       :columns="columns"
       :data-source="tableData"
       :pagination="pageSetting"
+      :loading="tableLoading"
       @change="handleTableChange"
     >
       <template #tags="{ text: tags }">
@@ -34,10 +35,15 @@
 
 <script setup lang="ts">
 import { reactive } from "vue";
-defineProps({
+
+const props = defineProps({
   tableData: {
     type: Array<any>,
     default: [],
+  },
+  tableLoading: {
+    type: Boolean,
+    default: false,
   },
 });
 const columns = [
@@ -86,7 +92,7 @@ interface PageSetting {
 const pageSetting: PageSetting = reactive({
   current: 1,
   pageSize: 10,
-  total: 0,
+  total: props.tableData[0]?.total || 0,
   showSizeChanger: true,
   pageSizeOptions: ["10", "20", "50", "100"],
 });

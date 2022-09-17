@@ -10,7 +10,7 @@
 import { ref } from "vue";
 import { UserOutlined } from "@ant-design/icons-vue";
 
-const userName = ref<string>("用户A");
+const userName = ref<string>("用户Admin");
 </script>
 <style lang="less" scoped>
 .avatar {

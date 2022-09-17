@@ -39,6 +39,7 @@
       <div class="table">
         <Table
           :table-data="listData"
+          :table-loading="tableLoading"
           @on-detail="getDetail"
           @on-remove="getDelete"
           @on-page="refreshTable"
@@ -51,6 +52,7 @@
           title="指纹详情"
           width="1000px"
           wrap-class-name="full-modal"
+          :confirm-loading="confirmLoading"
           @ok="handleOk"
         >
           <a-form
@@ -60,27 +62,48 @@
             class="form-layout"
           >
             <a-form-item label="指纹 ID ">
-              <a-input v-model:value="formState.fingerId" disabled />
+              <a-input v-model:value="formState.Id" disabled />
             </a-form-item>
-            <a-form-item label="应用描述">
-              <a-input v-model:value="formState.appDesc" type="textarea" />
+            <a-form-item label="操作系统">
+              <a-input v-model:value="formState.Os" type="textarea" />
             </a-form-item>
-            <a-form-item label="是否验证">
-              <a-switch v-model:checked="formState.validate" />
+            <a-form-item label="系统版本">
+              <a-input v-model:value="formState.Version" />
             </a-form-item>
-            <a-form-item label="应用版本">
+            <a-form-item label="对应应用">
+              <a-input v-model:value="formState.Service" type="textarea" />
+            </a-form-item>
+            <!-- <a-form-item label="应用版本">
               <a-select v-model:value="formState.version" placeholder="选择版本">
                 <a-select-option value="shanghai">Zone one</a-select-option>
                 <a-select-option value="beijing">Zone two</a-select-option>
               </a-select>
+            </a-form-item> -->
+          </a-form>
+
+          <a-form :label-col="labelCol" class="middle-item">
+            <a-form-item label="指纹">
+              <a-input v-model:value="formState.Rule" type="textarea" class="middle-first" />
+            </a-form-item>
+            <a-form-item label="是否验证">
+              <a-switch v-model:checked="formState.Verify" />
             </a-form-item>
           </a-form>
+
+          <a-form :label-col="labelCol" class="middle-col">
+            <a-form-item label="聚类目的">
+              <a-input v-model:value="formState.Original" type="textarea" />
+            </a-form-item>
+          </a-form>
+
           <a-form :label-col="labelCol" :wrapper-col="wrapperCol" class="res">
             <a-form-item>
               <span>聚类分析响应：</span>
             </a-form-item>
-            <a-form-item>
-              <div class="resp"></div>
+            <a-form-item style="margin-top: -20px">
+              <div v-for="(item, index) in formState.Samples" :key="index" class="resp">
+                {{ item }}
+              </div>
             </a-form-item>
           </a-form>
         </a-modal>
@@ -92,6 +115,7 @@
 <script setup lang="ts">
 import { ref, reactive, UnwrapRef, onBeforeMount } from "vue";
 import zhCN from "ant-design-vue/es/locale/zh_CN";
+import { message } from "ant-design-vue";
 import { SearchOutlined } from "@ant-design/icons-vue";
 import Table from "./components/table.vue";
 // @ts-ignore
@@ -102,11 +126,15 @@ const appType = ref<number>();
 
 // getlist带参数
 const getList = async (
-  pagination: { current: number; pageSize: number } = { current: 1, pageSize: 10 },
+  pagination?: { current: number; pageSize: number },
   valid?: string | number,
   appType?: string | number
 ) => {
-  let queryStr = `/api/list?pageNo=${pagination.current}&pageSize=${pagination.pageSize}`;
+  let queryStr = `/api/list`;
+
+  if (pagination) {
+    queryStr += `?pageNo=${pagination.current}&pageSize=${pagination.pageSize}`;
+  }
   if (valid) {
     queryStr += `&isValid=${valid}`;
   }
@@ -123,7 +151,7 @@ interface TableData {
   key: string;
   finger: string;
   address: string;
-  tags: string[];
+  tags: string;
 }
 interface Datum {
   /**
@@ -145,6 +173,7 @@ onBeforeMount(async () => {
   const res = await axios.get("/api/list?pageNo=1&pageSize=10");
   if (res.status === 200) {
     const resData: [] = res.data;
+    const totalNum: number = res.total;
     const arr: Array<TableData> = [];
     resData.forEach((e: Datum, index: number) => {
       arr.push({
@@ -152,7 +181,8 @@ onBeforeMount(async () => {
         finger: e.finger,
         address: e.app,
         tags: e.status,
-      } as unknown as TableData);
+        total: totalNum,
+      } as TableData);
     });
     listData.value = arr;
   }
@@ -160,11 +190,13 @@ onBeforeMount(async () => {
 
 // 过滤搜索
 const serachList = async () => {
-  await getList(val, state.value, appType.value);
+  const res = await getList({ current: 1, pageSize: 10 }, state.value, appType.value);
+  console.log(res);
 };
 
 // 刷新表格
 const refreshTable = async (val: any) => {
+  console.log(val);
   await getList(val, state.value, appType.value);
 };
 
@@ -173,82 +205,116 @@ const modalVisible = ref<boolean>(false);
 const showModal = () => {
   modalVisible.value = true;
 };
-const getDetail = (val: any) => {
-  console.log("father", val);
+const getDetail = async (val: any) => {
+  if (!val.key) {
+    message.error("未查到指纹ID！");
+    return;
+  }
+  try {
+    const res = await axios.get(`/api/detail?id=${val.key}`);
+    if (res.status === 200) {
+      const resData: FormState = res.data;
+      formState.Id = resData.Id;
+      formState.Original = resData.Original;
+      formState.Os = resData.Os;
+      formState.Rule = resData.Rule;
+      formState.Samples = resData.Samples;
+      formState.Service = resData.Service;
+      formState.Verify = resData.Verify;
+      formState.Version = resData.Version;
+    }
+  } catch (error) {
+    message.warning("网络错误");
+  }
+
   showModal();
 };
 
 // delete item
+const tableLoading = ref<boolean>(false);
 const getDelete = async (val: any) => {
-  const data = {
-    id: val.id,
-  };
-  const res = await axios.post("/api/delete", data);
-  console.log("del", res);
+  try {
+    tableLoading.value = true;
+    const data = {
+      id: val.id,
+    };
+    const res = await axios.post("/api/delete", data);
+
+    const ret = await getList();
+    if (ret.status === 200) {
+      const retData = ret.data;
+      listData.value = retData;
+    }
+  } catch (error) {
+    console.error("删除失败！");
+  } finally {
+    tableLoading.value = false;
+  }
 };
 
-const handleOk = (e: MouseEvent) => {
-  console.log(e);
-  modalVisible.value = false;
+const confirmLoading = ref<boolean>(false);
+const handleOk = async (e: MouseEvent) => {
+  confirmLoading.value = true;
+  try {
+    const fd = {
+      id: formState.Id,
+      os: formState.Os,
+      rule: formState.Rule,
+      service: formState.Service,
+      isValid: formState.Verify,
+      version: formState.Version,
+    };
+    const res = await axios.post("/api/detail", fd);
+    console.log(res, fd);
+
+    modalVisible.value = false;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    confirmLoading.value = false;
+  }
 };
 
 // form
 interface FormState {
-  fingerId: string;
-  version: string | undefined;
-  appDesc: string;
-  validate: boolean;
+  Id: string;
+  Version: string;
+  // appDesc: string;
+  Verify: boolean;
+  Os: string;
+  Service: string;
+  Rule: string;
+  Original: string;
+  Samples: string[];
 }
 const labelCol = { style: { width: "80px" } };
 const wrapperCol = { style: { width: "350px" } };
 const formState: UnwrapRef<FormState> = reactive({
-  fingerId: "",
-  version: undefined,
-  appDesc: "",
-  validate: true,
+  Id: "",
+  Version: "",
+  Verify: true,
+  Os: "",
+  Service: "",
+  Rule: "",
+  Original: "",
+  Samples: [],
 });
 
 // table
-const columns = [
-  {
-    title: "IP",
-    dataIndex: "ip",
-  },
-  {
-    title: "Port",
-    dataIndex: "port",
-  },
-  {
-    title: "端口响应",
-    dataIndex: "response",
-  },
-];
-
-const data = [
-  {
-    ip: "127.0.0.1",
-    port: "80",
-    response: "http",
-  },
-  {
-    ip: "127.0.0.1",
-    port: "80",
-    response: "http",
-  },
-  {
-    ip: "127.0.0.1",
-    port: "80",
-    response: "http",
-  },
-  {
-    ip: "127.0.0.1",
-    port: "80",
-    response: "http",
-  },
-];
 </script>
 
 <style lang="less" scoped>
+::-webkit-scrollbar {
+  width: 6px; /*竖向*/
+  height: 5px; /*横向*/
+}
+
+/*滚动条的滑块*/
+::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 2px;
+  cursor: pointer;
+}
 .content {
   margin: 20px 0px 0px 0px;
   background-color: #fff;
@@ -293,8 +359,25 @@ const data = [
 
   .resp {
     overflow-y: auto;
-    height: 120px;
-    background-color: pink;
+    height: 80px;
+    margin: 10px 0 10px 0;
+    padding: 5px 10px 5px 20px;
+    font-size: 16px;
+    border: 1px solid grey;
   }
+}
+
+.middle-item {
+  display: flex;
+  margin-top: 30px;
+
+  .middle-first {
+    width: 40vw;
+    min-width: 350px;
+  }
+}
+
+.middle-col {
+  margin: 30px 60px 40px 0px;
 }
 </style>
