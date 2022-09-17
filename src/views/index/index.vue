@@ -262,12 +262,17 @@ const getDelete = async (val: any) => {
       id: val.key,
     };
     const res = await axios.post("/api/delete", data);
-
-    // const ret = await getList();
-    // if (ret.status === 200) {
-    //   const retData = ret.data;
-    //   listData.value = retData;
+    // if (res.status !== 200) {
+    //   return;
     // }
+    const arr: Array<TableData> = [];
+    listData.value.forEach((e: TableData) => {
+      if (e.key !== val.key) {
+        arr.push(e);
+      }
+    });
+    listData.value = arr;
+    message.success("删除成功！");
   } catch (error) {
     console.error("删除失败！");
   } finally {
