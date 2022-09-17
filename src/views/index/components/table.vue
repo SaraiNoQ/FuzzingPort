@@ -22,6 +22,7 @@
             title="是否要删除该项内容？"
             ok-text="确认"
             cancel-text="取消"
+            style="width: 100px"
             @confirm="removeItem(record)"
             @cancel="() => {}"
           >
@@ -34,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { watch, ref } from "vue";
 
 const props = defineProps({
   tableData: {
@@ -45,16 +46,24 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  total: {
+    type: Number,
+    default: 0,
+  },
 });
 const columns = [
   {
     title: "指纹ID",
     dataIndex: "key",
+    width: 80,
+    align: "left",
   },
   {
     title: "状态",
     dataIndex: "tags",
     slots: { customRender: "tags" },
+    width: 100,
+    align: "center",
   },
   {
     title: "指纹",
@@ -63,17 +72,19 @@ const columns = [
   {
     title: "应用名称",
     dataIndex: "address",
+    width: 160,
   },
   {
     title: "操作",
     key: "action",
     slots: { customRender: "action" },
+    width: 120,
   },
 ];
 
 const emit = defineEmits(["on-detail", "on-remove", "on-page"]);
 const toDetail = (val: any) => {
-  console.log("table click", val);
+  console.log("table click", val, pageSetting);
   emit("on-detail", val);
 };
 
@@ -89,18 +100,28 @@ interface PageSetting {
   showSizeChanger: boolean;
   pageSizeOptions: string[];
 }
-const pageSetting: PageSetting = reactive({
+const pageSetting = ref<PageSetting>({
   current: 1,
   pageSize: 10,
-  total: props.tableData[0]?.total || 0,
+  total: props.total,
   showSizeChanger: true,
   pageSizeOptions: ["10", "20", "50", "100"],
 });
+watch(
+  () => props.total,
+  () => {
+    pageSetting.value.total = props.total;
+  }
+);
 const handleTableChange = (pagination: PageSetting) => {
-  pageSetting.current = pagination.current;
-  pageSetting.pageSize = pagination.pageSize;
+  pageSetting.value.current = pagination.current;
+  pageSetting.value.pageSize = pagination.pageSize;
   emit("on-page", pagination);
 };
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+/deep/ .ant-table-cell {
+  max-width: 760px;
+}
+</style>

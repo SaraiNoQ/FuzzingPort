@@ -9,22 +9,21 @@
             style="width: 160px"
             :allow-clear="true"
             placeholder="状态"
+            @change="handleSelectChange"
           >
             <a-select-option :value="0">未验证</a-select-option>
             <a-select-option :value="1">已验证</a-select-option>
           </a-select>
         </div>
         <div class="item">
-          应用类型：<a-select
-            ref="select"
+          应用类型：<a-input
             v-model:value="appType"
             style="width: 160px"
+            type="textarea"
             :allow-clear="true"
-            placeholder="请选择"
+            placeholder="请输入"
           >
-            <a-select-option :value="0">类型1</a-select-option>
-            <a-select-option :value="1">类型2</a-select-option>
-          </a-select>
+          </a-input>
         </div>
         <div class="item">
           <a-button type="primary" @click="serachList"
@@ -40,6 +39,7 @@
         <Table
           :table-data="listData"
           :table-loading="tableLoading"
+          :total="totalNum"
           @on-detail="getDetail"
           @on-remove="getDelete"
           @on-page="refreshTable"
@@ -73,12 +73,6 @@
             <a-form-item label="对应应用">
               <a-input v-model:value="formState.Service" type="textarea" />
             </a-form-item>
-            <!-- <a-form-item label="应用版本">
-              <a-select v-model:value="formState.version" placeholder="选择版本">
-                <a-select-option value="shanghai">Zone one</a-select-option>
-                <a-select-option value="beijing">Zone two</a-select-option>
-              </a-select>
-            </a-form-item> -->
           </a-form>
 
           <a-form :label-col="labelCol" class="middle-item">
@@ -122,12 +116,15 @@ import Table from "./components/table.vue";
 import axios from "~/utils/axios";
 
 const state = ref<number>();
-const appType = ref<number>();
+const handleSelectChange = (val: number) => {
+  state.value = val;
+};
+const appType = ref<string>();
 
 // getlist带参数
 const getList = async (
   pagination?: { current: number; pageSize: number },
-  valid?: string | number,
+  valid?: number,
   appType?: string | number
 ) => {
   let queryStr = `/api/list`;
@@ -135,7 +132,7 @@ const getList = async (
   if (pagination) {
     queryStr += `?pageNo=${pagination.current}&pageSize=${pagination.pageSize}`;
   }
-  if (valid) {
+  if (valid === 0 || valid === 1) {
     queryStr += `&isValid=${valid}`;
   }
   if (appType) {
@@ -169,11 +166,12 @@ interface Datum {
   status?: string;
 }
 
+const totalNum = ref<number>(0);
 onBeforeMount(async () => {
   const res = await axios.get("/api/list?pageNo=1&pageSize=10");
   if (res.status === 200) {
     const resData: [] = res.data;
-    const totalNum: number = res.total;
+    totalNum.value = res.total;
     const arr: Array<TableData> = [];
     resData.forEach((e: Datum, index: number) => {
       arr.push({
@@ -181,7 +179,6 @@ onBeforeMount(async () => {
         finger: e.finger,
         address: e.app,
         tags: e.status,
-        total: totalNum,
       } as TableData);
     });
     listData.value = arr;
@@ -191,13 +188,39 @@ onBeforeMount(async () => {
 // 过滤搜索
 const serachList = async () => {
   const res = await getList({ current: 1, pageSize: 10 }, state.value, appType.value);
-  console.log(res);
+  const resData = res.data;
+  if (!resData || resData.lenght === 0) {
+    message.warning("没有找到相关记录");
+    return;
+  }
+  const arr: Array<TableData> = [];
+  totalNum.value = res.total;
+  resData.forEach((e: Datum, index: number) => {
+    arr.push({
+      key: e.id,
+      finger: e.finger,
+      address: e.app,
+      tags: e.status,
+    } as TableData);
+  });
+  listData.value = arr;
 };
 
 // 刷新表格
 const refreshTable = async (val: any) => {
-  console.log(val);
-  await getList(val, state.value, appType.value);
+  const res = await getList(val, state.value, appType.value);
+  const resData = res.data;
+  const arr: Array<TableData> = [];
+  totalNum.value = res.total;
+  resData.forEach((e: Datum, index: number) => {
+    arr.push({
+      key: e.id,
+      finger: e.finger,
+      address: e.app,
+      tags: e.status,
+    } as TableData);
+  });
+  listData.value = arr;
 };
 
 // visible
@@ -236,15 +259,15 @@ const getDelete = async (val: any) => {
   try {
     tableLoading.value = true;
     const data = {
-      id: val.id,
+      id: val.key,
     };
     const res = await axios.post("/api/delete", data);
 
-    const ret = await getList();
-    if (ret.status === 200) {
-      const retData = ret.data;
-      listData.value = retData;
-    }
+    // const ret = await getList();
+    // if (ret.status === 200) {
+    //   const retData = ret.data;
+    //   listData.value = retData;
+    // }
   } catch (error) {
     console.error("删除失败！");
   } finally {
