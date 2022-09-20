@@ -55,7 +55,7 @@ const columns = [
   {
     title: "指纹ID",
     dataIndex: "key",
-    width: 80,
+    width: 90,
     align: "left",
   },
   {
@@ -72,13 +72,13 @@ const columns = [
   {
     title: "应用名称",
     dataIndex: "address",
-    width: 160,
+    width: 120,
   },
   {
     title: "操作",
     key: "action",
     slots: { customRender: "action" },
-    width: 120,
+    width: 190,
   },
 ];
 

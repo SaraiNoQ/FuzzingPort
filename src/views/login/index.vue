@@ -37,7 +37,7 @@
           <a-form-item name="remember" no-style>
             <a-checkbox v-model:checked="formState.remember">记住我</a-checkbox>
           </a-form-item>
-          <a href="" style="margintop: 4px">点击注册</a>
+          <!-- <a href="" style="margintop: 4px">点击注册</a> -->
           <!-- <a class="login-form-forgot" href="">Forgot password</a> -->
         </div>
 
@@ -131,7 +131,7 @@ export default defineComponent({
 </script>
 <style lang="less" scoped>
 #building {
-  background: url("");
+  background: url("http://www.epicq.top/images/upload_38c524d034ffb553bb16b281d399d772.png");
   width: 100%;
   height: 100%;
   position: fixed;
@@ -139,7 +139,7 @@ export default defineComponent({
 }
 
 #app {
-  // background-color: transparent;
+  // background-color: pink;
 }
 
 .login-form-wrap {
@@ -159,10 +159,11 @@ export default defineComponent({
   margin: 30vh auto 0 auto;
   width: 35vw;
   min-width: 400px;
-  padding: 50px 70px 40px 50px;
+  padding: 50px 70px 20px 50px;
   /* border: 2px solid rgb(24, 144, 255); */
   border-radius: 4px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.12);
+  background-color: rgba(255, 255, 255, 0.3);
 
   .header {
     font-size: 28px;

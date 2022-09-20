@@ -4,7 +4,7 @@ import NProgress from "nprogress";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/login",
+    redirect: "/home/index",
   },
   {
     path: "/404",
@@ -29,6 +29,15 @@ const routes: RouteRecordRaw[] = [
         path: "/home/detect",
         name: "探针管理",
         component: () => import("~/views/detect/index.vue"),
+        meta: {
+          icon: "home-outlined",
+          keepAlive: true,
+        },
+      },
+      {
+        path: "/home/confirm",
+        name: "验证指纹",
+        component: () => import("~/views/confirm/index.vue"),
         meta: {
           icon: "home-outlined",
           keepAlive: true,

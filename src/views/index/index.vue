@@ -76,7 +76,7 @@
           </a-form>
 
           <a-form :label-col="labelCol" class="middle-item">
-            <a-form-item label="指纹">
+            <a-form-item :label="fingerName">
               <a-input v-model:value="formState.Rule" type="textarea" class="middle-first" />
             </a-form-item>
             <a-form-item label="是否验证">
@@ -85,9 +85,12 @@
           </a-form>
 
           <a-form :label-col="labelCol" class="middle-col">
-            <a-form-item label="聚类目的">
-              <a-input v-model:value="formState.Original" type="textarea" />
+            <a-form-item label="聚类目标">
+              <!-- <a-input v-model:value="formState.Original" type="textarea" /> -->
             </a-form-item>
+            <div class="dest">
+              <pre>{{ formState.Original }}</pre>
+            </div>
           </a-form>
 
           <a-form :label-col="labelCol" :wrapper-col="wrapperCol" class="res">
@@ -96,7 +99,7 @@
             </a-form-item>
             <a-form-item style="margin-top: -20px">
               <div v-for="(item, index) in formState.Samples" :key="index" class="resp">
-                {{ item }}
+                <pre>{{ item }}</pre>
               </div>
             </a-form-item>
           </a-form>
@@ -225,6 +228,8 @@ const refreshTable = async (val: any) => {
 
 // visible
 const modalVisible = ref<boolean>(false);
+const fingerName = ref<string>("指纹");
+
 const showModal = () => {
   modalVisible.value = true;
 };
@@ -242,15 +247,26 @@ const getDetail = async (val: any) => {
       formState.Os = resData.Os;
       formState.Rule = resData.Rule;
       formState.Samples = resData.Samples;
+      formState.Samples.map((e: string) => {
+        handleSamp(e);
+      });
       formState.Service = resData.Service;
-      formState.Verify = resData.Verify;
+      formState.Verify = (resData.Verify as unknown) === "1" ? true : false;
       formState.Version = resData.Version;
+
+      // 修改标签名
+      if (resData.type === 1) {
+        fingerName.value = "指纹(时间维度)";
+      } else if (resData.type === 0) {
+        fingerName.value = "指纹";
+      }
     }
-  } catch (error) {
-    message.warning("网络错误");
-  }
+  } catch (error) {}
 
   showModal();
+};
+const handleSamp = (str: string) => {
+  return str.replaceAll("\n", "<br/>");
 };
 
 // delete item
@@ -261,10 +277,7 @@ const getDelete = async (val: any) => {
     const data = {
       id: val.key,
     };
-    const res = await axios.post("/api/delete", data);
-    // if (res.status !== 200) {
-    //   return;
-    // }
+    await axios.post("/api/delete", data);
     const arr: Array<TableData> = [];
     listData.value.forEach((e: TableData) => {
       if (e.key !== val.key) {
@@ -284,16 +297,32 @@ const confirmLoading = ref<boolean>(false);
 const handleOk = async (e: MouseEvent) => {
   confirmLoading.value = true;
   try {
-    const fd = {
-      id: formState.Id,
-      os: formState.Os,
-      rule: formState.Rule,
-      service: formState.Service,
-      isValid: formState.Verify,
-      version: formState.Version,
-    };
-    const res = await axios.post("/api/detail", fd);
-    console.log(res, fd);
+    // const fd = {
+    //   id: formState.Id,
+    //   os: formState.Os,
+    //   rule: formState.Rule,
+    //   service: formState.Service,
+    //   isValid: formState.Verify,
+    //   version: formState.Version,
+    // };
+    // const formData = new FormData();
+    const formData = new URLSearchParams();
+    formData.append("id", formState.Id);
+    formData.append("os", formState.Os);
+    formData.append("rule", formState.Rule);
+    formData.append("service", formState.Service);
+    formData.append("isValid", formState.Verify ? "1" : "0");
+    formData.append("version", formState.Version);
+    await axios.post("/api/detail", formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    // const res = await axios.post("/api/detail", fd, {
+    //   "Content-Type": "application/x-www-form-urlencoded",
+    // });
+    message.success("修改成功！", 1000);
 
     modalVisible.value = false;
   } catch (error) {
@@ -314,6 +343,7 @@ interface FormState {
   Rule: string;
   Original: string;
   Samples: string[];
+  type?: string | number;
 }
 const labelCol = { style: { width: "80px" } };
 const wrapperCol = { style: { width: "350px" } };
@@ -387,8 +417,9 @@ const formState: UnwrapRef<FormState> = reactive({
 
   .resp {
     overflow-y: auto;
-    height: 80px;
-    margin: 10px 0 10px 0;
+    overflow-x: visible;
+    height: 110px;
+    margin: 20px 150px 25px 0;
     padding: 5px 10px 5px 20px;
     font-size: 16px;
     border: 1px solid grey;
@@ -406,6 +437,16 @@ const formState: UnwrapRef<FormState> = reactive({
 }
 
 .middle-col {
-  margin: 30px 60px 40px 0px;
+  margin: 30px 150px 40px 10px;
+
+  .dest {
+    overflow-y: auto;
+    overflow-x: visible;
+    height: 90px;
+    margin-top: -10px;
+    padding: 5px 10px 5px 20px;
+    font-size: 16px;
+    border: 1px solid grey;
+  }
 }
 </style>
