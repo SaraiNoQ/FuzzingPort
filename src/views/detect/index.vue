@@ -15,7 +15,11 @@
           :rules="rules"
         >
           <a-form-item label="探 针" name="probestring">
-            <a-input v-model:value="formState.probestring" />
+            <a-textarea
+              v-model:value="formState.probestring"
+              type="textarea"
+              :autosize="{ minRows: 5, maxRows: 10 }"
+            />
           </a-form-item>
           <a-form-item label="端 口">
             <a-input v-model:value="formState.ports" type="textarea" />
@@ -110,11 +114,11 @@ const columns = [
     dataIndex: "ports",
   },
   {
-    title: "允许的ssl端口",
+    title: "允许的SSL端口",
     dataIndex: "sslports",
   },
   {
-    title: "优先级(越小越优先)",
+    title: "优先级",
     dataIndex: "rarity",
     align: "left",
   },
