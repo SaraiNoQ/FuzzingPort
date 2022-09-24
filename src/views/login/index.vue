@@ -132,7 +132,7 @@ export default defineComponent({
 </script>
 <style lang="less" scoped>
 #building {
-  background: url("http://www.epicq.top/images/upload_38c524d034ffb553bb16b281d399d772.png");
+  background: url("../../../public/images/bgimg.jpg");
   width: 100%;
   height: 100%;
   position: fixed;
