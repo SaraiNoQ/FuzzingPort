@@ -2,7 +2,13 @@
   <div class="container">
     <a-config-provider :locale="zhCN">
       <div class="header">
-        <a-input v-model:value="id" class="finger" placeholder="指纹ID" :allow-clear="true" />
+        <a-input
+          v-model:value="id"
+          class="finger"
+          placeholder="指纹ID"
+          :allow-clear="true"
+          @keydown.enter="search"
+        />
         <a-button type="primary" @click="search"
           >搜索
           <template #icon>
@@ -11,8 +17,11 @@
         </a-button>
       </div>
       <div v-if="visible" class="content">
-        <div v-if="fingerList.length > 0" class="data">
-          <div class="finger-header">指纹：{{ Rule }}</div>
+        <div v-if="fingerList?.length > 0" class="data">
+          <div class="finger-header">
+            <span style="width: 40px">指纹</span>
+            <a-textarea v-model:value="Rule" :autosize="{ minRows: 2, maxRows: 6 }"></a-textarea>
+          </div>
           <div class="finger-content">
             <div v-for="(item, index) in fingerList" :key="index" class="item">
               <pre class="pre">{{ item.Banner }}</pre>
@@ -109,9 +118,12 @@ const search = async () => {
   }
 
   .finger-header {
-    margin: 0px auto 25px auto;
-    width: 40%;
+    margin: 0px 0px 25px 20px;
     font-size: 18px;
+    width: 80%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .finger-content {

@@ -322,7 +322,7 @@ const handleOk = async (e: MouseEvent) => {
     // const res = await axios.post("/api/detail", fd, {
     //   "Content-Type": "application/x-www-form-urlencoded",
     // });
-    message.success("修改成功！", 1000);
+    message.success("修改成功！", 1);
 
     modalVisible.value = false;
   } catch (error) {

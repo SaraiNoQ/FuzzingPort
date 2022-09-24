@@ -112,6 +112,7 @@ const columns = [
   {
     title: "允许的端口",
     dataIndex: "ports",
+    ellipsis: true,
   },
   {
     title: "允许的SSL端口",
@@ -121,21 +122,25 @@ const columns = [
     title: "优先级",
     dataIndex: "rarity",
     align: "left",
+    width: 80,
   },
   {
     title: "等待时间(ms)",
     dataIndex: "totalwaitms",
     align: "left",
+    width: 120,
   },
   {
     title: "类型",
     dataIndex: "type",
     align: "left",
+    width: 70,
   },
   {
     title: "是否启用",
     dataIndex: "enable",
     align: "left",
+    width: 90,
   },
   {
     title: "操作",
@@ -154,6 +159,7 @@ onBeforeMount(async () => {
     const res = await axios.get("/api/probe/list?pageNo=1&pageSize=10");
     if (res.status === 200) {
       tableData.value = res.data;
+      pageSetting.value.total = res.total;
     }
   } catch (error) {
     console.log(error);
@@ -207,10 +213,10 @@ const handleOk = async () => {
       },
     });
     if (res.status === 200) {
-      message.success("新增探针成功！", 1200);
+      message.success("新增探针成功！", 1.2);
       visible.value = false;
     } else {
-      message.error("新增探针失败！", 1200);
+      message.error("新增探针失败！", 1.2);
     }
   } catch (error) {
     console.log(error);
@@ -254,9 +260,9 @@ const handleTableChange = async (pagination: PageSetting) => {
 const removeItem = async (record: any) => {
   const res = await axios.get("/api/probe/delete?id=" + record.id);
   if (res.status === 200) {
-    message.success("删除成功！", 1200);
+    message.success("删除成功！", 1.2);
   } else {
-    message.error("删除失败！", 1200);
+    message.error("删除失败！", 1.2);
   }
 };
 
@@ -276,6 +282,6 @@ const rules = {
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.12);
 }
 /deep/ .ant-table-cell {
-  max-width: 750px;
+  max-width: 350px;
 }
 </style>
