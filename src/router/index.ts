@@ -5,7 +5,7 @@ import { message } from "ant-design-vue";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/login",
+    redirect: "/home/index",
   },
   {
     path: "/404",
@@ -69,7 +69,10 @@ index.beforeEach((to, from) => {
   const token: string | null = sessionStorage.getItem("token");
   if (to.fullPath !== "/login" && token !== "token") {
     index.push("/login");
-    message.error("请先登录！");
+    // 如果不是从/重定向过来的
+    if (from.fullPath !== "/") {
+      message.error("请先登录！");
+    }
   }
 });
 
