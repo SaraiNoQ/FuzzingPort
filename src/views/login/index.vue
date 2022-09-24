@@ -93,6 +93,7 @@ export default defineComponent({
 
     const loading = ref<boolean>(false);
     const setSession = (bool: boolean) => {
+      sessionStorage.setItem("token", "token");
       try {
         if (bool) {
           localStorage.setItem("username", formState.username);

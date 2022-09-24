@@ -1,10 +1,11 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import NProgress from "nprogress";
+import { message } from "ant-design-vue";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/home/index",
+    redirect: "/login",
   },
   {
     path: "/404",
@@ -63,6 +64,12 @@ const index = createRouter({
 index.beforeEach((to, from) => {
   if (!NProgress.isStarted()) {
     NProgress.start();
+  }
+
+  const token: string | null = sessionStorage.getItem("token");
+  if (to.fullPath !== "/login" && token !== "token") {
+    index.push("/login");
+    message.error("请先登录！");
   }
 });
 

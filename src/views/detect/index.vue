@@ -103,11 +103,12 @@ const columns = [
   {
     title: "探针base64格式",
     dataIndex: "probestring",
-    align: "center",
+    eslipsis: true,
   },
   {
     title: "探针明文格式",
     dataIndex: "plaintext",
+    eslipsis: true,
   },
   {
     title: "允许的端口",
