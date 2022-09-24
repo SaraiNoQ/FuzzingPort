@@ -99,16 +99,17 @@ const columns = [
     title: "ID",
     dataIndex: "id",
     align: "left",
+    width: 60,
   },
   {
     title: "探针base64格式",
     dataIndex: "probestring",
-    eslipsis: true,
+    ellipsis: true,
   },
   {
     title: "探针明文格式",
     dataIndex: "plaintext",
-    eslipsis: true,
+    ellipsis: true,
   },
   {
     title: "允许的端口",
@@ -129,7 +130,7 @@ const columns = [
     title: "等待时间(ms)",
     dataIndex: "totalwaitms",
     align: "left",
-    width: 120,
+    width: 116,
   },
   {
     title: "类型",
